@@ -54,6 +54,8 @@ function calculateShipping(id, cep) {
 
 document.addEventListener('DOMContentLoaded', function () {
     const books = document.querySelector('.books');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
 
     fetch('http://localhost:3000/products')
         .then((data) => {
@@ -63,11 +65,15 @@ document.addEventListener('DOMContentLoaded', function () {
             throw data.statusText;
         })
         .then((data) => {
-            if (data) {
-                data.forEach((book) => {
+            let allBooks = data; // Salva todos os livros para futura filtragem
+
+            function renderBooks(filteredBooks) {
+                books.innerHTML = ''; // Limpa a lista de livros
+                filteredBooks.forEach((book) => {
                     books.appendChild(newBook(book));
                 });
 
+                // Adiciona os event listeners para calcular frete
                 document.querySelectorAll('.button-shipping').forEach((btn) => {
                     btn.addEventListener('click', (e) => {
                         const id = e.target.getAttribute('data-id');
@@ -76,12 +82,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
+                // Adiciona os event listeners para compra de livro
                 document.querySelectorAll('.button-buy').forEach((btn) => {
                     btn.addEventListener('click', (e) => {
                         swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
                     });
                 });
             }
+
+            // Exibe todos os livros inicialmente
+            renderBooks(allBooks);
+
+            // Adiciona o event listener para o botão de busca
+            searchButton.addEventListener('click', function() {
+                const searchQuery = searchInput.value.toLowerCase(); // Obtém o valor da pesquisa
+                const filteredBooks = allBooks.filter(book => book.name.toLowerCase().includes(searchQuery)); // Filtra os livros
+                renderBooks(filteredBooks); // Atualiza a exibição dos livros filtrados
+            });
         })
         .catch((err) => {
             swal('Erro', 'Erro ao listar os produtos', 'error');
